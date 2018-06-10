@@ -1,0 +1,106 @@
+{
+  "apiVersion" :"v1",
+  "kind" :"Template",
+  "label" : {
+    "template" :"SampleApplication",
+    "example":"helloWorldApplication"
+  },
+  "message" : "Running Sample Boot Service",
+  "metadata": {
+    "annotations": {
+      "description": "Running Sample Application",
+      "iconClass": "icon-sso",
+      "version": "1.4.7"
+    },
+    "name": "helloworldapplication"
+  },
+  "objects" : [{
+    "apiVersion" : "v1",
+    "kind" : "Service",
+    "metadata" : {
+      "annotations": {
+        "description": "The web server's Sample application."
+      },
+      "labels": {
+        "application": "helloworldapplication"
+      },
+      "name" : "helloworldapplication"
+    },
+    "spec" :{
+      "ports" :[
+        {
+          "port" : 8080,
+          "targetPort" : 8080
+        }
+      ],
+      "selector" : {
+        "deploymentConfig" : "helloworldapplication"
+      }
+    }
+  },{
+    "apiVersion": "v1",
+    "kind": "DeploymentConfig",
+    "metadata": {
+      "labels": {
+        "application": "helloworldapplication"
+      },
+      "name": "helloworldapplication"
+    },
+    "spec": {
+      "replicas": 1,
+      "selector": {
+        "deploymentConfig": "helloworldapplication"
+      },
+      "strategy": {
+        "type": "Recreate"
+      },
+      "template": {
+        "metadata": {
+          "labels": {
+            "application": "helloworldapplication",
+            "deploymentConfig": "helloworldapplication"
+          },
+          "name": "helloworldapplication"
+        },
+        "spec": {
+          "containers": [
+            {
+              "image": "172.30.1.1:5000/sampleproj/demo",
+              "imagePullPolicy": "Always",
+              "name": "helloworldapplication",
+              "ports": [
+                {
+                  "containerPort": 8080,
+                  "name": "http",
+                  "protocol": "TCP"
+                }
+              ],
+              "readinessProbe" :{
+                "httpGet" : {
+                  "scheme" : "HTTP",
+                  "path" : "/actuator/info",
+                  "port" :8080
+                },
+                "initialDelaySeconds" : 240,
+                "periodSeconds" : 5,
+                "timeoutSeconds" : 5
+
+              },
+              "livenessProbe" :{
+                "httpGet" : {
+                  "scheme" : "HTTP",
+                  "path" : "/actuator/health",
+                  "port" :8080
+                },
+                "initialDelaySeconds" : 240,
+                "periodSeconds" : 5,
+                "timeoutSeconds" : 5
+              }
+            }
+          ],
+          "terminationGracePeriodSeconds": 75
+        }
+      }
+    }
+  }]
+}
